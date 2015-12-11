@@ -39,6 +39,7 @@ Install Percona mySQL
 ```
 sudo apt-get update
 sudo apt-get install percona-server-server-5.5
+sudo apt-get install percona-xtrabackup
 ```
 
 Check that Percona mySQL is running
@@ -90,10 +91,60 @@ Now you should be able to connect from the outside.
 
 # Seeding the data
 
-You can find included some ruby scripts to seed the database at db-1 with some sample data.
+You can find included some ruby scripts to seed the database at db-1 with some sample data. We only need to seed db-1.
 
 ```
 ruby seed-db-1.rb
 ```
 
 This will create a database called my_store and some random customers into it.
+
+
+# Backing up the master machine
+
+The master will be db-1. We will do first a backup of the machine. We will use Percona xtrabackup.
+
+First we will install it.
+
+```
+sudo apt-get install percona-xtrabackup
+```
+
+In the Vagrantfile we have set up a shared folder at /opt/shared. We will use that folder in both machines.
+
+We can run a backup with
+
+```
+sudo innobackupex --user=root /opt/shared/
+```
+
+Then in /opt/shared we will have a folder with the current date as name. It will contain a backup of out db.
+
+
+# Import the backup in the slave
+
+First we need to stop mysql in db-2
+
+```
+sudo service mysql stop
+```
+
+We can check in /etc/mysql/my.cnf where mysql data is stored
+
+```
+datadir         = /var/lib/mysql
+```
+
+Then we copy all the backup files there.
+
+```
+sudo rm -rf /var/lib/mysql/*
+sudo cp -r /opt/shared/2015-12-11_21-49-33/* /var/lib/mysql/
+sudo chown -R mysql:mysql /var/lib/mysql/
+```
+
+We can start back mysql
+
+```
+sudo service mysql start
+```

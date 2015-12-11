@@ -3,6 +3,7 @@
 
 Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/trusty64"
+  config.vm.synced_folder "shared/", "/opt/shared"
 
   config.vm.define "db-1" do |db|
     db.vm.network "forwarded_port", guest: 3306, host: 3306
