@@ -2,6 +2,8 @@
 
 ## Starting the VMs
 
+If you already have a mySQL running in your computer, please, stop it since we will use our local 3306 and 3307 ports.
+
 ```
 vagrant up
 ```
@@ -61,4 +63,35 @@ You can take a look to the default config files at
 
 ```
 /etc/mysql/my.cnf
+```
+
+If you try to connect now from the host you will get a message saying that you are not allowed to connect from your host.
+
+Let's connect from the VM.
+
+```
+mysql -u root
+```
+
+And show the users and privileges
+
+```
+select host, user from mysql.user;
+```
+
+We can grant to root all privileges from anywhere
+
+```
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
+```
+
+Now you should be able to connect from the outside.
+
+
+# Seeding the data
+
+You can find included some ruby scripts to seed the database at db-1 with some sample data.
+
+```
+ruby seed-db-1.rb
 ```
