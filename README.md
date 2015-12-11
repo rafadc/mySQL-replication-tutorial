@@ -66,6 +66,14 @@ You can take a look to the default config files at
 /etc/mysql/my.cnf
 ```
 
+Since we want to be able to be connected from all the network interfaces we can set the bind_address to 0.0.0.0
+
+```
+bind-address            = 0.0.0.0
+```
+
+After changing this you will need to restart mysql as we did before.
+
 If you try to connect now from the host you will get a message saying that you are not allowed to connect from your host.
 
 Let's connect from the VM.
@@ -126,7 +134,7 @@ Then in /opt/shared we will have a folder with the current date as name. It will
 First we need to stop mysql in db-2
 
 ```
-sudo service mysql stop
+sudo service mySQL stop
 ```
 
 We can check in /etc/mysql/my.cnf where mysql data is stored
@@ -138,13 +146,34 @@ datadir         = /var/lib/mysql
 Then we copy all the backup files there.
 
 ```
-sudo rm -rf /var/lib/mysql/*
-sudo cp -r /opt/shared/2015-12-11_21-49-33/* /var/lib/mysql/
-sudo chown -R mysql:mysql /var/lib/mysql/
+sudo su -
+cd /var/lib/mysql/
+rm -rf *
+exit
+sudo cp -r /opt/shared/<your date>/* /var/lib/mysql/
+sudo chown -R mysql:mysql /var/lib/mysql
 ```
 
-We can start back mysql
+Since we are using a debian based distro for the VMs (Ubuntu) we need to update one more file. Take the password for the debian-sys-maint user from /etc/mysql/debian.cnf in db-1 and copy it to /etc/mysql/debian.cnf in db-2
+
+We can start back mySQL
 
 ```
 sudo service mysql start
+```
+
+## Configure the replication
+
+### On master
+
+Check that you can connect to the slave
+
+```
+mysql -h 192.168.1.11 -u root
+```
+
+If everything is correct just run the following sql
+
+```
+GRANT REPLICATION SLAVE ON *.*  TO 'repl'@'192.168.1.11'
 ```
