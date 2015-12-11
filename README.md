@@ -95,3 +95,5 @@ You can find included some ruby scripts to seed the database at db-1 with some s
 ```
 ruby seed-db-1.rb
 ```
+
+This will create a database called my_store and some random customers into it.
