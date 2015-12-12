@@ -142,7 +142,7 @@ Then in /opt/shared we will have a folder with the current date as name. It will
 First we need to stop mysql in db-2
 
 ```
-sudo service mySQL stop
+sudo service mysql stop
 ```
 
 We can check in /etc/mysql/my.cnf where mysql data is stored
@@ -151,14 +151,11 @@ We can check in /etc/mysql/my.cnf where mysql data is stored
 datadir         = /var/lib/mysql
 ```
 
-Then we copy all the backup files there.
+Then we copy all the backup files to that location.
 
 ```
-sudo su -
-cd /var/lib/mysql/
-rm -rf *
-exit
-sudo cp -r /opt/shared/<your date>/* /var/lib/mysql/
+sudo rm -rf /var/lib/mysql
+sudo cp -r /opt/shared/<your backup> /var/lib/mysql
 sudo chown -R mysql:mysql /var/lib/mysql
 ```
 
@@ -170,9 +167,23 @@ We can start back mySQL
 sudo service mysql start
 ```
 
+TODO: At this moment I had to remove both ib_logfile in the slave machine since mySQL is complining about their size to start. Is there a cleanest solution?
+
 ## Configure the replication
 
 ### On master
+
+We need to set the server-id in my.cnf. Uncomment the following line in the config file.
+
+```
+server-id               = 1
+```
+
+To apply the changes you will need to restart mySQL.
+
+```
+sudo service mysql restart
+```
 
 Check that you can connect to the slave
 
@@ -186,7 +197,7 @@ If everything is correct exit that console and connect to the local DB.
 mysql -u root
 ```
 
-Just run the following sql
+Just run the following SQL
 
 ```
 GRANT REPLICATION SLAVE ON *.*  TO 'root'@'192.168.1.11';
@@ -205,20 +216,43 @@ Restart the db.
 Check the binlog position in the slave
 
 ```
-cat /var/lib/mysql/xtrabackup_binlog_info
+sudo cat /var/lib/mysql/xtrabackup_binlog_info
 ```
 
 It should be something like
 
 ```
-
+mysql-bin.000001        389124
 ```
 
-Connect to mysql console and configure db-1 as master
+Connect to db-2's mySQL console and configure db-1 as master
 
 ```
 CHANGE MASTER TO
-  MASTER_HOST='192.168.1.10'
-  MASTER_USER='root'
+  MASTER_HOST='192.168.1.10',
+  MASTER_USER='root',
+  MASTER_LOG_FILE='<binlog file>',
+  MASTER_LOG_POS=<binlog position>;
+```
 
+The binlog file and the binlog position are the ones obtained by reading xtrabackup_binlog_info so, for the exmaple before the values should be:
+
+```
+CHANGE MASTER TO
+  MASTER_HOST='192.168.1.10',
+  MASTER_USER='root',
+  MASTER_LOG_FILE='mysql-bin.000001',
+  MASTER_LOG_POS=389124;
+```
+
+And finally start the slave from mySQL console.
+
+```
+START SLAVE;
+```
+
+We can check the status of the slave with
+
+```
+SHOW SLAVE STATUS \G
 ```
