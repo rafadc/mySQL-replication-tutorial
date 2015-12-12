@@ -1,4 +1,10 @@
-# Demo mySQL setup
+# Replication mySQL setup
+
+We will be setting a replication system between two virtual machines. The replication schema in mySQL works like this
+
+![Redundancy schema](images/redundancy.png)
+
+The replication is used to achieve redundancy of data so we can get our system online fast in case of disaster.
 
 ## Starting the VMs
 
@@ -256,3 +262,18 @@ We can check the status of the slave with
 ```
 SHOW SLAVE STATUS \G
 ```
+
+And the replication should be configured!
+
+# Replicating some data
+
+Let's count the number of customers in db-1 and db-2 with some SQL
+
+```
+use my_store;
+select count(*) from customers;
+```
+
+We should have 1500 in both databases.
+
+In the project folder we have a *insert-data-in-db1.rb* script that inserts 180 customers in the database waiting one second between insertions. Run it and keep counting the number of records in db-2 to check that everything is being replicated.
