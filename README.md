@@ -96,6 +96,13 @@ GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 
 Now you should be able to connect from the outside.
 
+To be able to replicate data we need to enable binlogs in mySQL. You can do it adding the following lines to my.cnf
+
+```
+log-bin                        = /var/lib/mysql/mysql-bin
+expire-logs-days               = 14
+sync-binlog                    = 1
+```
 
 # Seeding the data
 
@@ -124,6 +131,7 @@ We can run a backup with
 
 ```
 sudo innobackupex --user=root /opt/shared/
+sudo innobackupex --user=root --apply-log /opt/shared/<backup folder>/
 ```
 
 Then in /opt/shared we will have a folder with the current date as name. It will contain a backup of out db.
@@ -172,8 +180,45 @@ Check that you can connect to the slave
 mysql -h 192.168.1.11 -u root
 ```
 
-If everything is correct just run the following sql
+If everything is correct exit that console and connect to the local DB.
 
 ```
-GRANT REPLICATION SLAVE ON *.*  TO 'repl'@'192.168.1.11'
+mysql -u root
+```
+
+Just run the following sql
+
+```
+GRANT REPLICATION SLAVE ON *.*  TO 'root'@'192.168.1.11';
+```
+
+### On slave
+
+In the slave (db-2) just change the following in my.cnf
+
+```
+server-id=2
+```
+
+Restart the db.
+
+Check the binlog position in the slave
+
+```
+cat /var/lib/mysql/xtrabackup_binlog_info
+```
+
+It should be something like
+
+```
+
+```
+
+Connect to mysql console and configure db-1 as master
+
+```
+CHANGE MASTER TO
+  MASTER_HOST='192.168.1.10'
+  MASTER_USER='root'
+
 ```
