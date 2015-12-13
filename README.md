@@ -1,6 +1,8 @@
 # Replication mySQL setup
 
-We will be setting a replication system between two virtual machines. The replication schema in mySQL works like this
+We will be setting a replication system between two virtual machines. We will be using Percona distribution of mySQL. Anyway the process showuld be really similar in mySQL community edition.
+
+The replication schema in mySQL works like this
 
 ![Redundancy schema](images/redundancy.png)
 
