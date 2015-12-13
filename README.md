@@ -1,4 +1,4 @@
-# Replication mySQL setup
+# mySQL replication setup
 
 We will be setting a replication system between two virtual machines. We will be using Percona's mySQL distribution. Anyway the process should be really similar in mySQL community edition.
 
