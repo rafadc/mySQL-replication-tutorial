@@ -1,6 +1,6 @@
 # Replication mySQL setup
 
-We will be setting a replication system between two virtual machines. We will be using Percona distribution of mySQL. Anyway the process showuld be really similar in mySQL community edition.
+We will be setting a replication system between two virtual machines. We will be using Percona's mySQL distribution. Anyway the process should be really similar in mySQL community edition.
 
 The replication schema in mySQL works like this
 
@@ -175,7 +175,7 @@ We can start back mySQL
 sudo service mysql start
 ```
 
-*TODO*: At this moment I had to remove both ib_logfile in the slave machine since mySQL is complining about their size to start. Is there a cleanest solution that doesn't involve to manually change slave's config?
+*TODO*: At this moment I had to remove both ib_logfile in the slave machine since mySQL is complaining about their size to start. Is there a cleanest solution that doesn't involve to manually change slave's config?
 
 ## Configure the replication
 
@@ -243,7 +243,7 @@ CHANGE MASTER TO
   MASTER_LOG_POS=<binlog position>;
 ```
 
-The binlog file and the binlog position are the ones obtained by reading xtrabackup_binlog_info so, for the exmaple before the values should be:
+The binlog file and the binlog position are the ones obtained by reading xtrabackup_binlog_info so, for the example before the values should be:
 
 ```
 CHANGE MASTER TO
@@ -295,7 +295,7 @@ select count(*) from customers;
 
 We should have 1500 in both databases.
 
-In the project folder we have a *insert-data-in-db1.rb* script that inserts 180 customers in the database waiting one second between insertions. Run it and keep counting the number of records in db-2 to check that everything is being replicated.
+In the project folder we have an **insert-data-in-db1.rb** script that inserts 180 customers in the database waiting one second between insertions. Run it and keep counting the number of records in db-2 to check that everything is being replicated.
 
 When we save data to one of the databases we need to be really careful to run our INSERT statements on the master database. It is possible to write data in the slave machines but this will not be replicated to any other database leaving the databases out of sync forever. Also that could cause the replication to break due to conflicts in the data. This is something we don't want to do in 99.99% of the scenarios.
 
@@ -333,7 +333,7 @@ START SLAVE;
 
 If we had more slave we should do this process in each of them. But since we only have 2 machines this is not a problem for us.
 
-If we want to make sure that our config is correct we can run in both machines
+If we want to make sure that our configuration is correct we can run in both machines
 
 ```
 SHOW SLAVE STATUS\G
@@ -369,7 +369,9 @@ Now we need to switch our application to connect to the new master.
 
 # Exercise
 
-Update *insert-data-in-db1.rb* to make the data it inserts to replicate again.
+If we run **insert-data-in-db1.rb** right now the data won't be replicated. Why?
+
+Update **insert-data-in-db1.rb** to make the data it inserts to replicate again.
 
 # Resources
 
