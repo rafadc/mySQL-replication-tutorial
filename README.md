@@ -265,6 +265,23 @@ SHOW SLAVE STATUS \G
 
 And the replication should be configured!
 
+We can run the following statement in db-1
+
+```
+SHOW SLAVE HOSTS;
+```
+
+And we should get something like
+
+```
++-----------+------+------+-----------+
+| Server_id | Host | Port | Master_id |
++-----------+------+------+-----------+
+|         2 |      | 3306 |         1 |
++-----------+------+------+-----------+
+1 row in set (0.00 sec)
+```
+
 # Replicating some data
 
 Let's count the number of customers in db-1 and db-2 with some SQL
@@ -277,3 +294,76 @@ select count(*) from customers;
 We should have 1500 in both databases.
 
 In the project folder we have a *insert-data-in-db1.rb* script that inserts 180 customers in the database waiting one second between insertions. Run it and keep counting the number of records in db-2 to check that everything is being replicated.
+
+When we save data to one of the databases we need to be really careful to run our INSERT statements on the master database. It is possible to write data in the slave machines but this will not be replicated to any other database leaving the databases out of sync forever. Also that could cause the replication to break due to conflicts in the data. This is something we don't want to do in 99.99% of the scenarios.
+
+# Promoting an slave to master
+
+First we need to make sure that all work pending is processed in all slave. Since we only have one we only need to run in db-2:
+
+```
+show processlist;
+```
+
+We should see one of the system processes show a message like this
+
+```
+Slave has read all relay log; waiting for the slave I/O thread to update it
+```
+
+If not, probably there is still data being processed.
+
+Once it is finished we can promote db-2 to master.
+
+```
+STOP SLAVE;
+RESET MASTER;
+```
+
+And the in the old master we need to do:
+
+```
+CHANGE MASTER TO
+  MASTER_HOST='192.168.1.11',
+  MASTER_USER='root';
+START SLAVE;
+```
+
+If we had more slave we should do this process in each of them. But since we only have 2 machines this is not a problem for us.
+
+If we want to make sure that our config is correct we can run in both machines
+
+```
+SHOW SLAVE STATUS\G
+```
+
+And in the master (now, db-2) we should see
+
+```
+Slave_IO_State:
+[...]
+Slave_IO_Running: No
+Slave_SQL_Running: No
+```
+
+whereas in the slave (now db-1) we will see
+
+```
+Slave_IO_State: Waiting for master to send event
+[...]
+Slave_IO_Running: Yes
+Slave_SQL_Running: Yes
+```
+
+Also not that
+
+```
+SHOW SLAVE HOSTS;
+```
+
+In the old master (db-1) will still return old data until it is restarted.
+
+
+# Resources
+
+- [Official mySQL page for replication](http://dev.mysql.com/doc/refman/5.0/en/replication-solutions-switch.html)
