@@ -363,6 +363,11 @@ SHOW SLAVE HOSTS;
 
 In the old master (db-1) will still return old data until it is restarted.
 
+Now we need to switch our application to connect to the new master.
+
+# Exercise
+
+Update *insert-data-in-db1.rb* to make the data it inserts to replicate again.
 
 # Resources
 
