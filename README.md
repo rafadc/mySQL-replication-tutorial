@@ -173,7 +173,7 @@ We can start back mySQL
 sudo service mysql start
 ```
 
-TODO: At this moment I had to remove both ib_logfile in the slave machine since mySQL is complining about their size to start. Is there a cleanest solution?
+*TODO*: At this moment I had to remove both ib_logfile in the slave machine since mySQL is complining about their size to start. Is there a cleanest solution that doesn't involve to manually change slave's config?
 
 ## Configure the replication
 
